@@ -1,16 +1,26 @@
-const FUNC_WARNING = `🙊 Value is a function. Possibly avoidable re-render?`
-const AVOIDABLE_WARNING = `💥 Value did not change. Avoidable re-render!`
+import {DIFF_TYPES} from './deepDiff'
 
-export const defaultNotifier = ({name, prev, next, type}) => {
-  console.group(name)
+export const defaultNotifier = (groupName, changes) => {
+  console.group(groupName)
 
-  if (type === `avoidable`) {
-    console.warn(`%c%s`, `font-weight: bold`, AVOIDABLE_WARNING)
-  } else {
-    console.warn(FUNC_WARNING)
-  }
+  changes.forEach(({type, name, prev, next}) => {
+    switch (type) {
+      case DIFF_TYPES.SAME:
+        console.warn(`💥 ${name}: Value is the same (equal by reference). Avoidable re-render!`)
+        console.log(`Value:`, prev)
+        break;
+      case DIFF_TYPES.EQUAL:
+        console.warn(`💥 ${name}: Value did not change. Avoidable re-render!`)
+        console.log(`Before:`, prev)
+        console.log(`After:`, next)
+        break;
+      case DIFF_TYPES.FUNCTIONS:
+        console.warn(`🙊 ${name}: Changes are in functions only. Possibly avoidable re-render?`)
+        console.log(`Functions before:`, prev)
+        console.log(`Functions after:`, next)
+        break;
+    }
+  })
 
-  console.log(`%cbefore`, `font-weight: bold`, prev)
-  console.log(`%cafter `, `font-weight: bold`, next)
-  console.groupEnd()
+  console.groupEnd();
 }
